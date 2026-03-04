@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper Note: CBU-DSSAN for Imbalanced Fault Diagnosis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    
+    <script>
+        MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+        .sidebar { width: 280px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
+        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .sidebar a:hover { color: #0969da; text-decoration: underline; }
+        .sidebar .sub-menu { margin-left: 20px; margin-top: 4px; font-size: 13px; }
+        .main-content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 1000px; }
+        html { scroll-behavior: smooth; }
+        div[align="center"] { text-align: center; margin: 20px 0; }
+        table { display: block; width: 100%; overflow: auto; }
+        @media (max-width: 900px) {
+            body { display: block; }
+            .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>Contents</h2>
+        <ul>
+            <li><a href="#1-research-background">1. Research Background</a></li>
+            <li>
+                <a href="#2-cbu-dssan-architecture">2. CBU-DSSAN Architecture</a>
+                <ul class="sub-menu">
+                    <li><a href="#21-data-layer-cbu">2.1 Data Layer: CBU</a></li>
+                    <li><a href="#22-model-layer-dssan">2.2 Model Layer: DSSAN</a></li>
+                </ul>
+            </li>
+            <li><a href="#3-experiment-and-data">3. Experiment and Data</a></li>
+            <li><a href="#4-conclusion">4. Conclusion</a></li>
+            <li><a href="#literature-source">Literature Source</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content markdown-body">
+        
+        <h1>Paper Note: Highly Imbalanced Fault Diagnosis via CBU-DSSAN</h1>
+
+        <blockquote>
+            <p><strong>A Fault Diagnosis Framework for Gas Turbines under Highly Imbalanced Data</strong></p>
+            <p><strong>Paper Title</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+            <p><strong>Journal</strong>: <em>Advanced Engineering Informatics</em>, Vol. 54, 2022</p>
+            <p><strong>DOI</strong>: <a href="https://doi.org/10.1016/j.aei.2022.101725">10.1016/j.aei.2022.101725</a></p>
+        </blockquote>
+
+        <p>
+            <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.aei.2022.101725-blue" alt="DOI"> 
+            <img src="https://img.shields.io/badge/Status-Published-success" alt="Status"> 
+            <img src="https://img.shields.io/badge/Topic-Fault_Diagnosis-orange" alt="Topic">
+        </p>
+
+        <hr>
+
+        <h2 id="1-research-background">1. Research Background</h2>
+        <p>Gas turbines are critical in aviation and industry. Due to high reliability, operational data is "highly imbalanced": massive normal samples but very few fault samples. Traditional models bias toward the majority, leading to high false-negative rates.</p>
+        <p>Furthermore, minor faults often overlap with normal data in the feature space. This paper proposes CBU-DSSAN, combining data-level clustering downsampling and model-level siamese attention networks.</p>
+
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/eef40418-dccd-46aa-9401-3b31421346f8" />
+          <p><em>Fig 1. Sample distributions in (a) Raw space (b) After CBU (c) Mapped space by CBU-DSSAN</em></p>
+        </div>
+
+        <h2 id="2-cbu-dssan-architecture">2. CBU-DSSAN Method Architecture</h2>
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/d26cbe4f-3717-48d3-a85b-6554b9d0697d" />
+          <p><em>Fig 2. Overall workflow of the CBU-DSSAN diagnosis framework</em></p>
+        </div>
+
+        <h3 id="21-data-layer-cbu">2.1 Data Layer: Clustering-based Downsampling (CBU)</h3>
+        <p>To avoid information loss in random downsampling, the paper uses a K-means strategy:</p>
+        <ol>
+            <li>Cluster the massive normal samples into multiple clusters.</li>
+            <li>Extract cluster centers to represent normal states.</li>
+            <li>Merge centers with rare fault samples to create a balanced set that retains distribution traits.</li>
+        </ol>
+
+        <h3 id="22-model-layer-dssan">2.2 Model Layer: Deep Siamese Self-attention Network (DSSAN)</h3>
+        <p>DSSAN combines two core mechanisms:</p>
+        <ul>
+            <li><strong>Siamese Network</strong>: Learns from paired samples using Contrastive Loss to separate classes in feature space.</li>
+            <li><strong>Self-Attention Mechanism</strong>: Uses Multi-head Self-Attention to capture temporal dependencies in multidimensional time series.</li>
+        </ul>
+
+        <h2 id="3-experiment-and-data">3. Experimental Design and Data Processing</h2>
+        <p>Real-world airline data was used, focusing on baseline deviations of EGT, speed, and fuel flow. Samples were built via sliding windows with five-fold cross-validation.</p>
+
+        <p><strong>Table 1. Sample Counts in the Gas Turbine Dataset</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th align="left">Label</th>
+                    <th align="left">Train Samples</th>
+                    <th align="left">Test Samples</th>
+                    <th align="left">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Normal</td><td>787</td><td>197</td><td>984</td></tr>
+                <tr><td>EIF (EGT Indication)</td><td>30</td><td>8</td><td>38</td></tr>
+                <tr><td>TSIF (TAT Sensor)</td><td>20</td><td>5</td><td>25</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="4-conclusion">4. Conclusion</h2>
+        <ol>
+            <li><strong>Accuracy</strong>: Balanced Accuracy reached 92.26%, outperforming standalone baselines and other resampling strategies.</li>
+            <li><strong>Feature Separation</strong>: t-SNE shows distinct boundaries between classes in the DSSAN space.</li>
+            <li><strong>Efficiency</strong>: Inference time per sample is ~1.33ms, meeting real-time requirements.</li>
+        </ol>
+
+        <hr>
+        <h2 id="literature-source">Literature Source</h2>
+        <p><strong>Title</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+        <p><strong>Journal</strong>: <em>Advanced Engineering Informatics</em></p>
+        <p><strong>DOI</strong>: 10.1016/j.aei.2022.101725</p>
+
+    </main>
+
+</body>
+</html>

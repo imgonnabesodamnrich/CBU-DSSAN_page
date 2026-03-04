@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>論文ノート：CBU-DSSANによるガスタービンの故障診断</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    
+    <script>
+        MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+        .sidebar { width: 280px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
+        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .sidebar a:hover { color: #0969da; text-decoration: underline; }
+        .sidebar .sub-menu { margin-left: 20px; margin-top: 4px; font-size: 13px; }
+        .main-content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 1000px; }
+        html { scroll-behavior: smooth; }
+        div[align="center"] { text-align: center; margin: 20px 0; }
+        table { display: block; width: 100%; overflow: auto; }
+        @media (max-width: 900px) {
+            body { display: block; }
+            .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>目次</h2>
+        <ul>
+            <li><a href="#1-研究背景">1. 研究背景</a></li>
+            <li>
+                <a href="#2-cbu-dssan方法核心架构">2. CBU-DSSAN 方法のアーキテクチャ</a>
+                <ul class="sub-menu">
+                    <li><a href="#21-数据层基于聚类的降采样算法-cbu">2.1 データ層：クラスタリング降サンプリング</a></li>
+                    <li><a href="#22-模型层深度孪生自注意力网络-dssan">2.2 モデル層：DSSAN</a></li>
+                </ul>
+            </li>
+            <li><a href="#3-实验设计与数据处理">3. 実験設計とデータ処理</a></li>
+            <li><a href="#4-结论">4. 結論</a></li>
+            <li><a href="#文献来源">参考文献</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content markdown-body">
+        
+        <h1>論文ノート：クラスタリング降サンプリングと深層シャム自己注意ネットワーク (CBU-DSSAN)</h1>
+
+        <blockquote>
+            <p><strong>高度に不均衡なデータ下でのガスタービン故障診断フレームワーク</strong></p>
+            <p><strong>論文タイトル</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+            <p><strong>ジャーナル</strong>: <em>Advanced Engineering Informatics</em>, Vol. 54, 2022</p>
+            <p><strong>DOI</strong>: <a href="https://doi.org/10.1016/j.aei.2022.101725">10.1016/j.aei.2022.101725</a></p>
+        </blockquote>
+
+        <p>
+            <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.aei.2022.101725-blue" alt="DOI"> 
+            <img src="https://img.shields.io/badge/Status-Published-success" alt="Status"> 
+            <img src="https://img.shields.io/badge/Topic-Fault_Diagnosis-orange" alt="Topic">
+        </p>
+
+        <hr>
+
+        <h2 id="1-研究背景">1. 研究背景</h2>
+        <p>ガスタービンは航空・産業分野の重要機器です。非常に信頼性が高いため、実運用データは「高度に不均衡」であり、正常データが膨大で故障データが極めて稀です。従来のモデルは多数派（正常）に偏りやすく、故障の見逃し率が急増します。</p>
+        <p>また、微小な故障は特徴空間で正常データと重なりやすく（Class Overlapping）、境界の特定が困難です。本研究では、データ層（CBU）とモデル層（DSSAN）を組み合わせた診断フレームワークを提案します。</p>
+
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/eef40418-dccd-46aa-9401-3b31421346f8" />
+          <p><em>図1 (a) 従来空間 (b) CBUによる中心抽出 (c) CBU-DSSANによる特徴空間マッピング</em></p>
+        </div>
+
+        <h2 id="2-cbu-dssan方法核心架构">2. CBU-DSSAN 方法の核心アーキテクチャ</h2>
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/d26cbe4f-3717-48d3-a85b-6554b9d0697d" />
+          <p><em>図2 CBU-DSSAN 故障診断フレームワークの全体フロー</em></p>
+        </div>
+
+        <h3 id="21-数据层基于聚类的降采样算法-cbu">2.1 データ層：クラスタリング降サンプリング (CBU)</h3>
+        <p>ランダムな降サンプリングは代表的な情報を失う可能性があります。論文では K-means 聚類を採用しました：</p>
+        <ol>
+            <li>膨大な正常サンプルをクラスタリングする。</li>
+            <li>各クラスターの中心点を代表サンプルとして抽出する。</li>
+            <li>希少な故障サンプルと結合し、分布特徴を維持した均衡な学習セットを構築する。</li>
+        </ol>
+
+        <h3 id="22-模型层深度孪生自注意力网络-dssan">2.2 モデル層：深層シャム自己注意ネットワーク (DSSAN)</h3>
+        <p>DSSAN は2つのメカニズムを備えています：</p>
+        <ul>
+            <li><strong>シャムネットワーク (Siamese Network)</strong>：サンプルペアを入力し、対照損失（Contrastive Loss）によりクラス間の距離を拡大します。</li>
+            <li><strong>自己注意機構 (Self-Attention Mechanism)</strong>：多頭自己注意（Multi-head）により、多次元時系列の依存関係を捕捉します。</li>
+        </ul>
+
+        <h2 id="3-实验设计与数据处理">3. 実験設計とデータ処理</h2>
+        <p>実航空会社のガスタービンデータを使用。スライディングウィンドウによるサンプル構築と5分割交差検証を実施しました。</p>
+
+        <p><strong>表1 ガスタービンデータセットのサンプル数</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th align="left">ラベル</th>
+                    <th align="left">学習用</th>
+                    <th align="left">テスト用</th>
+                    <th align="left">合計</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>正常 (Normal)</td><td>787</td><td>197</td><td>984</td></tr>
+                <tr><td>EIF (排気温度故障)</td><td>30</td><td>8</td><td>38</td></tr>
+                <tr><td>TSIF (温度センサ故障)</td><td>20</td><td>5</td><td>25</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="4-结论">4. 结论</h2>
+        <ol>
+            <li><strong>精度向上</strong>：CBU-DSSAN のバランス正確度は 92.26% に達し、他の手法を上回りました。</li>
+            <li><strong>特徴分離</strong>：t-SNE 可視化により、混在していたクラス境界が明確に分離されたことを確認しました。</li>
+            <li><strong>効率</strong>：推論時間は1サンプルあたり約 1.33 ミリ秒であり、リアルタイム監視が可能です。</li>
+        </ol>
+
+        <hr>
+        <h2 id="文献来源">参考文献</h2>
+        <p><strong>論文タイトル</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+        <p><strong>ジャーナル</strong>: <em>Advanced Engineering Informatics</em></p>
+        <p><strong>DOI</strong>: 10.1016/j.aei.2022.101725</p>
+
+    </main>
+
+</body>
+</html>

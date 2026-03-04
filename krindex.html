@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>논문 노트: CBU-DSSAN 기반 가스터빈 고장 진단</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    
+    <script>
+        MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+        .sidebar { width: 280px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
+        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li { margin-bottom: 8px; }
+        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .sidebar a:hover { color: #0969da; text-decoration: underline; }
+        .sidebar .sub-menu { margin-left: 20px; margin-top: 4px; font-size: 13px; }
+        .main-content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 1000px; }
+        html { scroll-behavior: smooth; }
+        div[align="center"] { text-align: center; margin: 20px 0; }
+        table { display: block; width: 100%; overflow: auto; }
+        @media (max-width: 900px) {
+            body { display: block; }
+            .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>목차</h2>
+        <ul>
+            <li><a href="#1-연구-배경">1. 연구 배경</a></li>
+            <li>
+                <a href="#2-cbu-dssan方法核心架构">2. CBU-DSSAN 핵심 아키텍처</a>
+                <ul class="sub-menu">
+                    <li><a href="#21-数据层基于聚类的降采样算法-cbu">2.1 데이터층: 클러스터링 다운샘플링</a></li>
+                    <li><a href="#22-模型层深度孪生自注意力网络-dssan">2.2 모델층: DSSAN</a></li>
+                </ul>
+            </li>
+            <li><a href="#3-实验设计与数据处理">3. 실험 설계 및 데이터 처리</a></li>
+            <li><a href="#4-结论">4. 결론</a></li>
+            <li><a href="#文献来源">참고 문헌</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content markdown-body">
+        
+        <h1>논문 노트: 클러스터링 기반 다운샘플링 및 심층 샴 자가 주의 네트워크 (CBU-DSSAN)</h1>
+
+        <blockquote>
+            <p><strong>극심한 불균형 데이터 하에서의 가스터빈 고장 진단 프레임워크</strong></p>
+            <p><strong>논문 제목</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+            <p><strong>저널</strong>: <em>Advanced Engineering Informatics</em>, Vol. 54, 2022</p>
+            <p><strong>DOI</strong>: <a href="https://doi.org/10.1016/j.aei.2022.101725">10.1016/j.aei.2022.101725</a></p>
+        </blockquote>
+
+        <p>
+            <img src="https://img.shields.io/badge/DOI-10.1016%2Fj.aei.2022.101725-blue" alt="DOI"> 
+            <img src="https://img.shields.io/badge/Status-Published-success" alt="Status"> 
+            <img src="https://img.shields.io/badge/Topic-Fault_Diagnosis-orange" alt="Topic">
+        </p>
+
+        <hr>
+
+        <h2 id="1-연구-배경">1. 연구 배경</h2>
+        <p>가스터빈은 항공 및 산업 분야의 핵심 장비입니다. 높은 신뢰성으로 인해 실운영 데이터는 "극심한 불균형" 상태이며, 정상 샘플은 방대하나 고장 샘플은 매우 희소합니다. 기존 모델은 다수 클래스(정상)에 편향되어 고장 오진율이 급증하는 문제가 있습니다.</p>
+        <p>또한, 미세 고장은 특징 공간에서 정상 데이터와 중첩(Class Overlapping)되기 쉽습니다. 본 논문은 데이터층(CBU)과 모델층(DSSAN)을 결합한 진단 프레임워크를 제안합니다.</p>
+
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/eef40418-dccd-46aa-9401-3b31421346f8" />
+          <p><em>그림 1 (a) 기존 특징 공간 (b) CBU를 통한 중심 추출 (c) CBU-DSSAN 매핑 후 분포</em></p>
+        </div>
+
+        <h2 id="2-cbu-dssan方法核心架构">2. CBU-DSSAN 방법 핵심 아키텍처</h2>
+        <div align="center">
+          <img width="80%" src="https://github.com/user-attachments/assets/d26cbe4f-3717-48d3-a85b-6554b9d0697d" />
+          <p><em>그림 2 CBU-DSSAN 고장 진단 프레임워크 전체 흐름도</em></p>
+        </div>
+
+        <h3 id="21-数据层基于聚类的降采样算法-cbu">2.1 데이터층: 클러스터링 기반 다운샘플링 알고리즘 (CBU)</h3>
+        <p>무작위 다운샘플링은 정보 손실의 위험이 있습니다. 논문은 K-means 클러스터링 전략을 사용합니다:</p>
+        <ol>
+            <li>방대한 정상 샘플에 대해서만 클러스터링 수행.</li>
+            <li>각 클러스터의 중심점(Center)을 대표 샘플로 추출.</li>
+            <li>희소한 고장 샘플과 합쳐 균형 잡힌 데이터셋을 구축하여 분포 특성을 보존함.</li>
+        </ol>
+
+        <h3 id="22-模型层深度孪生自注意力网络-dssan">2.2 모델층: 심층 샴 자가 주의 네트워크 (DSSAN)</h3>
+        <p>DSSAN은 두 가지 핵심 메커니즘을 포함합니다:</p>
+        <ul>
+            <li><strong>샴 네트워크 (Siamese Network)</strong>: 쌍(Pair) 샘플을 입력받아 대비 손실(Contrastive Loss)을 통해 클래스 간 거리를 넓힙니다.</li>
+            <li><strong>자가 주의 메커니즘 (Self-Attention)</strong>: 다중 헤드(Multi-head) 주의를 통해 다차원 시계열의 전역 의존성을 포착합니다.</li>
+        </ul>
+
+        <h2 id="3-实验设计与数据处理">3. 실험 설계 및 데이터 처리</h2>
+        <p>실제 항공사의 가스터빈 데이터를 사용하였으며, 슬라이딩 윈도우 방식으로 샘플을 구성하고 5-겹 교차 검증을 실시했습니다.</p>
+
+        <p><strong>표 1 가스터빈 데이터셋 샘플 수 요약</strong></p>
+        <table>
+            <thead>
+                <tr>
+                    <th align="left">라벨</th>
+                    <th align="left">훈련 샘플</th>
+                    <th align="left">테스트 샘플</th>
+                    <th align="left">총합</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>정상 (Normal)</td><td>787</td><td>197</td><td>984</td></tr>
+                <tr><td>EIF (배기온도 고장)</td><td>30</td><td>8</td><td>38</td></tr>
+                <tr><td>TSIF (온도센서 고장)</td><td>20</td><td>5</td><td>25</td></tr>
+            </tbody>
+        </table>
+
+        <h2 id="4-结论">4. 결론</h2>
+        <ol>
+            <li><strong>정확도 향상</strong>: CBU-DSSAN의 균형 정확도는 92.26%로 다른 리샘플링 및 베이스라인 모델보다 우수했습니다.</li>
+            <li><strong>특징 분리</strong>: t-SNE 시각화 결과, 혼재되어 있던 클래스 경계가 명확히 분리됨을 확인했습니다.</li>
+            <li><strong>효율성</strong>: 샘플당 추론 시간은 약 1.33ms로 실시간 모니터링 요구사항을 충족합니다.</li>
+        </ol>
+
+        <hr>
+        <h2 id="文献来源">문헌 출처</h2>
+        <p><strong>논문 제목</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+        <p><strong>저널</strong>: <em>Advanced Engineering Informatics</em></p>
+        <p><strong>DOI</strong>: 10.1016/j.aei.2022.101725</p>
+
+    </main>
+
+</body>
+</html>
