@@ -3,36 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>論文ノート：CBU-DSSANによるガスタービンの故障診断</title>
+    <title>論文ノート：クラスタリング降サンプリングと深層シャム自己注意ネットワーク (CBU-DSSAN)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
-    
     <script>
         MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <style>
         body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
-        .sidebar { width: 280px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
-        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; }
+        .sidebar { width: 300px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
+        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; border-bottom: 1px solid #d0d7de; padding-bottom: 8px; }
         .sidebar ul { list-style: none; padding: 0; margin: 0; }
         .sidebar li { margin-bottom: 8px; }
-        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; line-height: 1.5; }
         .sidebar a:hover { color: #0969da; text-decoration: underline; }
-        .sidebar .sub-menu { margin-left: 20px; margin-top: 4px; font-size: 13px; }
-        .main-content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 1000px; }
+        .sidebar .sub-menu { margin-left: 16px; margin-top: 4px; border-left: 2px solid #e1e4e8; padding-left: 12px; }
+        .main-content { margin-left: 300px; flex: 1; padding: 40px 60px; max-width: 1000px; }
         html { scroll-behavior: smooth; }
-        div[align="center"] { text-align: center; margin: 20px 0; }
-        table { display: block; width: 100%; overflow: auto; }
-        @media (max-width: 900px) {
-            body { display: block; }
-            .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; }
-            .main-content { margin-left: 0; padding: 20px; }
-        }
+        div[align="center"] { text-align: center; margin: 24px 0; }
+        table { display: block; width: 100%; overflow: auto; margin-top: 16px; border-collapse: collapse; }
+        @media (max-width: 900px) { body { display: block; } .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; } .main-content { margin-left: 0; padding: 20px; } }
     </style>
 </head>
-<body>
-
+<body class="markdown-body">
     <nav class="sidebar">
     <!-- 语言切换按钮开始 -->
     <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap;">
@@ -47,27 +40,25 @@
         <h2>目次</h2>
         <ul>
             <li><a href="#1-研究背景">1. 研究背景</a></li>
-            <li>
-                <a href="#2-cbu-dssan方法核心架构">2. CBU-DSSAN 方法のアーキテクチャ</a>
+            <li><a href="#2-cbu-dssan手法の核心アーキテクチャ">2. CBU-DSSAN手法の核心アーキテクチャ</a>
                 <ul class="sub-menu">
-                    <li><a href="#21-数据层基于聚类的降采样算法-cbu">2.1 データ層：クラスタリング降サンプリング</a></li>
-                    <li><a href="#22-模型层深度孪生自注意力网络-dssan">2.2 モデル層：DSSAN</a></li>
+                    <li><a href="#21-データ層クラスタリングベースの降サンプリングアルゴリズム-cbu">2.1 データ層：クラスタリングベースの降サンプリング (CBU)</a></li>
+                    <li><a href="#22-モデル層深層シャム自己注意ネットワーク-dssan">2.2 モデル層：深層シャム自己注意ネットワーク (DSSAN)</a></li>
                 </ul>
             </li>
-            <li><a href="#3-实验设计与数据处理">3. 実験設計とデータ処理</a></li>
-            <li><a href="#4-结论">4. 結論</a></li>
-            <li><a href="#文献来源">参考文献</a></li>
+            <li><a href="#3-実験設計とデータ処理">3. 実験設計とデータ処理</a></li>
+            <li><a href="#4-結論">4. 結論</a></li>
+            <li><a href="#参考文献">参考文献</a></li>
         </ul>
     </nav>
 
-    <main class="main-content markdown-body">
-        
+    <main class="main-content">
         <h1>論文ノート：クラスタリング降サンプリングと深層シャム自己注意ネットワーク (CBU-DSSAN)</h1>
 
         <blockquote>
             <p><strong>高度に不均衡なデータ下でのガスタービン故障診断フレームワーク</strong></p>
             <p><strong>論文タイトル</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
-            <p><strong>ジャーナル</strong>: <em>Advanced Engineering Informatics</em>, Vol. 54, 2022</p>
+            <p><strong>ジャーナル</strong>: Advanced Engineering Informatics, Vol. 54, 2022</p>
             <p><strong>DOI</strong>: <a href="https://doi.org/10.1016/j.aei.2022.101725">10.1016/j.aei.2022.101725</a></p>
         </blockquote>
 
@@ -80,70 +71,79 @@
         <hr>
 
         <h2 id="1-研究背景">1. 研究背景</h2>
-        <p>ガスタービンは航空・産業分野の重要機器です。非常に信頼性が高いため、実運用データは「高度に不均衡」であり、正常データが膨大で故障データが極めて稀です。従来のモデルは多数派（正常）に偏りやすく、故障の見逃し率が急増します。</p>
-        <p>また、微小な故障は特徴空間で正常データと重なりやすく（Class Overlapping）、境界の特定が困難です。本研究では、データ層（CBU）とモデル層（DSSAN）を組み合わせた診断フレームワークを提案します。</p>
+        <p>ガスタービンは航空機や産業分野の基幹設備です。非常に信頼性が高いため、実際の運用における履歴監視データの大部分は正常状態のデータであり、故障データは極めて稀です。このようなデータ分布は、典型的な「高度に不均衡なデータ（Highly Imbalanced Data）」を構成します。</p>
+        <p>不均衡なデータ下では、従来の深層学習分類モデルは多数派クラス（正常サンプル）に注意を集中させる傾向があります。すべての入力を正常と予測しても全体的な精度は高く維持されるため、結果として故障サンプルの見逃し率が急激に上昇します。</p>
+        <p>また、微小な故障サンプルは特徴空間において正常サンプルと高度に重なり合う（Class Overlapping）ことが多く、通常の分類境界では効果的に区別することが困難です。多次元監視データを処理する際、従来の時間系列モデルでは時間的な相関の抽出が不十分であるという課題もあります。そのため、本論文ではデータ層とモデル層の両方を最適化した診断フレームワーク「CBU-DSSAN」を提案しています。</p>
 
         <div align="center">
           <img width="80%" src="https://github.com/user-attachments/assets/eef40418-dccd-46aa-9401-3b31421346f8" />
-          <p><em>図1 (a) 従来空間 (b) CBUによる中心抽出 (c) CBU-DSSANによる特徴空間マッピング</em></p>
+          <p><em>図1 (a) 従来の特徴空間におけるサンプル分布 (b) クラスタリング降サンプリング後の正常クラスター中心と故障サンプル (c) CBU-DSSANを適用し特徴空間にマッピングした後のサンプル分布の2次元模式図</em></p>
         </div>
 
-        <h2 id="2-cbu-dssan方法核心架构">2. CBU-DSSAN 方法の核心アーキテクチャ</h2>
+        <h2 id="2-cbu-dssan手法の核心アーキテクチャ">2. CBU-DSSAN手法の核心アーキテクチャ</h2>
         <div align="center">
           <img width="80%" src="https://github.com/user-attachments/assets/d26cbe4f-3717-48d3-a85b-6554b9d0697d" />
-          <p><em>図2 CBU-DSSAN 故障診断フレームワークの全体フロー</em></p>
+          <p><em>図2 CBU-DSSAN 故障診断フレームワークの全体フローチャート</em></p>
         </div>
+        <p>本手法は、データのバランスを整えるためのクラスタリング降サンプリング（CBU）と、特徴抽出および分類のための深層シャム自己注意ネットワーク（DSSAN）という2つの主要技術で構成されています。</p>
 
-        <h3 id="21-数据层基于聚类的降采样算法-cbu">2.1 データ層：クラスタリング降サンプリング (CBU)</h3>
-        <p>ランダムな降サンプリングは代表的な情報を失う可能性があります。論文では K-means 聚類を採用しました：</p>
+        <h3 id="21-データ層クラスタリングベースの降サンプリングアルゴリズム-cbu">2.1 データ層：クラスタリングベースの降サンプリング (CBU)</h3>
+        <p>不均衡データへの最も直感的な対応は降サンプリング（正常サンプルの削減）ですが、従来のランダムな手法では重要な代表情報が失われやすいです。論文ではK-meansクラスタリングに基づく降サンプリング戦略を採用しています：</p>
         <ol>
-            <li>膨大な正常サンプルをクラスタリングする。</li>
-            <li>各クラスターの中心点を代表サンプルとして抽出する。</li>
-            <li>希少な故障サンプルと結合し、分布特徴を維持した均衡な学習セットを構築する。</li>
+            <li>膨大な正常サンプルのみを対象にクラスター分析を行い、複数のクラスター（Cluster）に分割します。</li>
+            <li>各クラスターの中心点（Cluster Center）を正常サンプルの代表として抽出します。</li>
+            <li>これらの代表的な正常サンプルと希少な故障サンプルを統合し、新しいクラスバランスの取れた訓練セットを構築します。</li>
         </ol>
+        <p>この手法により、正常サンプルの絶対数を減らしつつ、正常状態の核心的なデータ分布特性を維持することができます。</p>
 
-        <h3 id="22-模型层深度孪生自注意力网络-dssan">2.2 モデル層：深層シャム自己注意ネットワーク (DSSAN)</h3>
-        <p>DSSAN は2つのメカニズムを備えています：</p>
+        <h3 id="22-モデル層深層シャム自己注意ネットワーク-dssan">2.2 モデル層：深層シャム自己注意ネットワーク (DSSAN)</h3>
+        <p>均衡なデータセットを得た後、モデルはサンプルの重なりと特徴抽出の課題を解決する必要があります。DSSANモジュールは2つの核心メカニズムを含みます：</p>
+        <p><strong>1. シャムネットワーク構造 (Siamese Network)</strong><br>
+        単一のサンプルを直接分類する従来モデルとは異なり、シャムネットワークは「サンプルペア」を入力として受け取ります。学習時の目標は、そのペアが同一カテゴリに属するかどうかを判定することです。対照損失関数（Contrastive Loss）を導入することで、学習過程において同クラスのサンプルを特徴空間上で近づけ、異クラスのサンプルを遠ざけます。このメカニズムは、特徴空間における正常サンプルと故障サンプルの距離を効果的に拡大し、クラスの重なりによる誤判定を緩和します。</p>
+        <p><strong>2. 自己注意機構 (Self-Attention Mechanism)</strong><br>
+        ガスタービンの監視データは典型的な多次元時系列です。シャムネットワークの特徴抽出モジュールとして、自己注意ネットワーク（SANet）は異なる位置や異なる次元のデータポイントに対して同時に大域的な注目を払うことができます。多頭自己注意機構（Multi-head Self-Attention）により、時間軸におけるデータの依存関係や変化パターンをより包括的に捉えることが可能です。</p>
+
+        <h2 id="3-実験設計とデータ処理">3. 実験設計とデータ処理</h2>
+        <p>アジアのある航空会社の実際のフライト運用データを使用しました。直接測定されたパラメータは環境や推力の影響を受けるため、OEM（製造メーカー）によって変換された基準偏差値を特徴パラメータとして選択しました。主な項目は以下の通りです：</p>
         <ul>
-            <li><strong>シャムネットワーク (Siamese Network)</strong>：サンプルペアを入力し、対照損失（Contrastive Loss）によりクラス間の距離を拡大します。</li>
-            <li><strong>自己注意機構 (Self-Attention Mechanism)</strong>：多頭自己注意（Multi-head）により、多次元時系列の依存関係を捕捉します。</li>
+            <li>排気温度余力 (EGTM)</li>
+            <li>排気温度偏差 (DEGT)</li>
+            <li>コア回転数偏差 (DN2)</li>
+            <li>燃料流量偏差 (DFF)</li>
         </ul>
+        <p>時系列特性に対応するため、スライディングウィンドウ法を用いてサンプルを構築し、5分割交差検証を適用して実験のランダム性を排除しました。データセットには984の正常サンプルと、少数の排気温度指示故障（EIF）および全温度センサ指示故障（TSIF）サンプルが含まれています。</p>
 
-        <h2 id="3-实验设计与数据处理">3. 実験設計とデータ処理</h2>
-        <p>実航空会社のガスタービンデータを使用。スライディングウィンドウによるサンプル構築と5分割交差検証を実施しました。</p>
-
-        <p><strong>表1 ガスタービンデータセットのサンプル数</strong></p>
+        <p><strong>表1 ガスタービンデータセットのサンプル数集計表</strong></p>
         <table>
             <thead>
                 <tr>
-                    <th align="left">ラベル</th>
-                    <th align="left">学習用</th>
-                    <th align="left">テスト用</th>
+                    <th align="left">データラベル</th>
+                    <th align="left">訓練セット</th>
+                    <th align="left">テストセット</th>
                     <th align="left">合計</th>
                 </tr>
             </thead>
             <tbody>
                 <tr><td>正常 (Normal)</td><td>787</td><td>197</td><td>984</td></tr>
-                <tr><td>EIF (排気温度故障)</td><td>30</td><td>8</td><td>38</td></tr>
-                <tr><td>TSIF (温度センサ故障)</td><td>20</td><td>5</td><td>25</td></tr>
+                <tr><td>排気温度故障 (EIF)</td><td>30</td><td>8</td><td>38</td></tr>
+                <tr><td>全温度センサ故障 (TSIF)</td><td>20</td><td>5</td><td>25</td></tr>
             </tbody>
         </table>
 
-        <h2 id="4-结论">4. 结论</h2>
+        <h2 id="4-結論">4. 結論</h2>
+        <p>主要な深層ネットワーク（ConvNet, RNN, LSTM, GRU等）および標準的なリサンプリング手法（SMOTE過サンプリング、通常のクラスタリング降サンプリング）と比較し、以下の客観的な性能データが得られました：</p>
         <ol>
-            <li><strong>精度向上</strong>：CBU-DSSAN のバランス正確度は 92.26% に達し、他の手法を上回りました。</li>
-            <li><strong>特徴分離</strong>：t-SNE 可視化により、混在していたクラス境界が明確に分離されたことを確認しました。</li>
-            <li><strong>効率</strong>：推論時間は1サンプルあたり約 1.33 ミリ秒であり、リアルタイム監視が可能です。</li>
+            <li><strong>精度の向上</strong>：バランス正確度（Balanced Accuracy）において、CBU-DSSANは92.26%に達し、単独のベースラインモデルや他のサンプリング戦略を組み合わせた対照群を明らかに上回りました。</li>
+            <li><strong>特徴分離効果</strong>：2次元特徴可視化（t-SNE）により、従来モデルでは故障サンプルと正常サンプルが深刻に混在していたのに対し、CBU-DSSANでは異なるカテゴリ間に明確な境界が現れ、シャムネットワークの対照損失の有効性が検証されました。</li>
+            <li><strong>推論効率</strong>：ネットワーク構造は比較的複雑ですが、学習後のテストサンプル1つあたりの推論時間は約1.33ミリ秒であり、産業現場でのリアルタイム監視の要求を十分に満たしています。</li>
         </ol>
+        <p>この手法は、高度に不均衡かつクラスの重なりが存在する産業故障データを扱う際、データレベルの圧縮（代表性の維持）とアルゴリズムレベルの距離学習（クラス間距離の拡大）を組み合わせることが、非常に有効なアプローチであることを示しています。</p>
 
         <hr>
-        <h2 id="文献来源">参考文献</h2>
-        <p><strong>論文タイトル</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
-        <p><strong>ジャーナル</strong>: <em>Advanced Engineering Informatics</em></p>
+        <h2 id="参考文献">参考文献</h2>
+        <p><strong>Title</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
+        <p><strong>Journal</strong>: Advanced Engineering Informatics</p>
         <p><strong>DOI</strong>: 10.1016/j.aei.2022.101725</p>
-
     </main>
-
 </body>
-
 </html>
