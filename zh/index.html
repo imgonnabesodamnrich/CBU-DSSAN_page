@@ -5,35 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>论文笔记：基于聚类降采样与深度孪生自注意力网络 (CBU-DSSAN)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
-    
-    <!-- 引入 MathJax 用于渲染 LaTeX 数学公式 -->
     <script>
         MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
     <style>
         body { margin: 0; padding: 0; display: flex; min-height: 100vh; background-color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
-        .sidebar { width: 280px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
-        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; }
+        .sidebar { width: 300px; background-color: #f6f8fa; border-right: 1px solid #d0d7de; position: fixed; height: 100vh; overflow-y: auto; padding: 24px; box-sizing: border-box; top: 0; left: 0; z-index: 100; }
+        .sidebar h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #24292f; border-bottom: 1px solid #d0d7de; padding-bottom: 8px; }
         .sidebar ul { list-style: none; padding: 0; margin: 0; }
         .sidebar li { margin-bottom: 8px; }
-        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; }
+        .sidebar a { text-decoration: none; color: #57606a; font-size: 14px; display: block; padding: 4px 0; transition: color 0.2s; line-height: 1.5; }
         .sidebar a:hover { color: #0969da; text-decoration: underline; }
-        .sidebar .sub-menu { margin-left: 20px; margin-top: 4px; font-size: 13px; }
-        .main-content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 1000px; }
+        .sidebar .sub-menu { margin-left: 16px; margin-top: 4px; border-left: 2px solid #e1e4e8; padding-left: 12px; }
+        .main-content { margin-left: 300px; flex: 1; padding: 40px 60px; max-width: 1000px; }
         html { scroll-behavior: smooth; }
-        div[align="center"] { text-align: center; margin: 20px 0; }
-        table { display: block; width: 100%; overflow: auto; }
-        @media (max-width: 900px) {
-            body { display: block; }
-            .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; }
-            .main-content { margin-left: 0; padding: 20px; }
-        }
+        div[align="center"] { text-align: center; margin: 24px 0; }
+        table { display: block; width: 100%; overflow: auto; margin-top: 16px; border-collapse: collapse; }
+        @media (max-width: 900px) { body { display: block; } .sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid #d0d7de; } .main-content { margin-left: 0; padding: 20px; } }
     </style>
 </head>
-<body>
-
+<body class="markdown-body">
     <nav class="sidebar">
     <!-- 语言切换按钮开始 -->
     <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap;">
@@ -43,16 +35,15 @@
         <a href="../jp/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 0.85rem;">日本語</a>
         <a href="../kr/index.html" style="color: var(--primary-color); font-weight: bold; font-size: 0.85rem;">한국어</a>
     </div>
-    <!-- 语言切换按钮结束 -->
+    <!-- 语言切换按钮结束 -->        
         
         <h2>目录</h2>
         <ul>
             <li><a href="#1-研究背景">1. 研究背景</a></li>
-            <li>
-                <a href="#2-cbu-dssan方法核心架构">2. CBU-DSSAN 方法核心架构</a>
+            <li><a href="#2-cbu-dssan方法核心架构">2. CBU-DSSAN方法核心架构</a>
                 <ul class="sub-menu">
-                    <li><a href="#21-数据层基于聚类的降采样算法-cbu">2.1 数据层：聚类降采样</a></li>
-                    <li><a href="#22-模型层深度孪生自注意力网络-dssan">2.2 模型层：DSSAN</a></li>
+                    <li><a href="#21-数据层基于聚类的降采样算法-cbu">2.1 数据层：基于聚类的降采样算法 (CBU)</a></li>
+                    <li><a href="#22-模型层深度孪生自注意力网络-dssan">2.2 模型层：深度孪生自注意力网络 (DSSAN)</a></li>
                 </ul>
             </li>
             <li><a href="#3-实验设计与数据处理">3. 实验设计与数据处理</a></li>
@@ -61,14 +52,13 @@
         </ul>
     </nav>
 
-    <main class="main-content markdown-body">
-        
+    <main class="main-content">
         <h1>论文笔记：基于聚类降采样与深度孪生自注意力网络 (CBU-DSSAN)</h1>
 
         <blockquote>
             <p><strong>A Fault Diagnosis Framework for Gas Turbines under Highly Imbalanced Data</strong></p>
             <p><strong>Paper Title</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
-            <p><strong>Journal</strong>: <em>Advanced Engineering Informatics</em>, Vol. 54, 2022</p>
+            <p><strong>Journal</strong>: Advanced Engineering Informatics, Vol. 54, 2022</p>
             <p><strong>DOI</strong>: <a href="https://doi.org/10.1016/j.aei.2022.101725">10.1016/j.aei.2022.101725</a></p>
         </blockquote>
 
@@ -81,12 +71,13 @@
         <hr>
 
         <h2 id="1-研究背景">1. 研究背景</h2>
-        <p>燃气轮机是航空器和工业领域的核心设备。在实际运行中，由于其具有极高的可靠性，监测数据呈现典型的“极度不平衡”：正常样本巨大，故障样本极其稀少。传统深度学习分类模型往往偏向多数类（正常样本），导致故障漏诊率急剧上升。</p>
-        <p>此外，微小故障样本在特征空间中往往与正常样本高度重叠（Class Overlapping），常规分类边界难以区分。论文提出了一种结合数据层（聚类降采样）和模型层（孪生注意力网络）优化的诊断框架——CBU-DSSAN。</p>
+        <p>燃气轮机是航空器和工业领域的核心设备。在实际运行中，由于其具有极高的可靠性，历史监测数据中绝大多数为正常状态数据，故障数据极其稀少。这种数据分布构成了典型的“极度不平衡数据”（Highly Imbalanced Data）。</p>
+        <p>在不平衡数据下，传统的深度学习分类模型倾向于将更多的注意力集中在多数类（正常样本）上。因为模型即使将所有输入都预测为正常，依然能获得很高的整体准确率。这会导致故障样本的漏诊率急剧上升。</p>
+        <p>此外，微小故障样本在特征空间中往往与正常样本存在高度重叠（Class Overlapping），常规的分类边界难以将它们有效区分。传统的时间序列模型在处理多维监测数据时，也面临时间相关性提取不充分的问题。因此，论文提出了一种结合数据层和模型层优化的诊断框架——CBU-DSSAN。</p>
 
         <div align="center">
           <img width="80%" src="https://github.com/user-attachments/assets/eef40418-dccd-46aa-9401-3b31421346f8" />
-          <p><em>图1 (a) 传统特征空间分布 (b) 聚类降采样示意 (c) CBU-DSSAN 映射后的特征空间分布</em></p>
+          <p><em>图1 (a) 传统特征空间中的样本分布 (b) 聚类降采样后的正常聚类中心与故障样本 (c) 采用 CBU-DSSAN 映射到特征空间后的样本分布二维示意图</em></p>
         </div>
 
         <h2 id="2-cbu-dssan方法核心架构">2. CBU-DSSAN方法核心架构</h2>
@@ -94,24 +85,33 @@
           <img width="80%" src="https://github.com/user-attachments/assets/d26cbe4f-3717-48d3-a85b-6554b9d0697d" />
           <p><em>图2 CBU-DSSAN 故障诊断框架整体流程图</em></p>
         </div>
+        <p>该方法由两部分主要技术构成：用于平衡数据的聚类降采样（CBU），以及用于特征提取与分类的深度孪生自注意力网络（DSSAN）。</p>
 
         <h3 id="21-数据层基于聚类的降采样算法-cbu">2.1 数据层：基于聚类的降采样算法 (CBU)</h3>
-        <p>传统的随机降采样容易丢失代表性信息。论文采用 K-means 聚类策略：</p>
+        <p>应对数据不平衡最直观的方法是对多数类进行降采样（减少正常样本数量）。但传统的随机降采样容易丢失关键的代表性信息。论文采用基于K-means聚类的降采样策略。具体过程为：</p>
         <ol>
-            <li>仅对海量正常样本进行聚类。</li>
-            <li>提取各簇中心点（Cluster Center）作为正常样本代表。</li>
-            <li>与稀少故障样本合并，构成类别平衡的训练集，在减少数据量的同时保留分布特征。</li>
+            <li>仅对海量的正常样本进行聚类分析，将其划分为多个簇（Cluster）。</li>
+            <li>提取每个簇的中心点（Cluster Center）作为正常样本的代表。</li>
+            <li>将这些代表性的正常样本与稀少的故障样本合并，构成一个新的、类别平衡的训练集。</li>
         </ol>
+        <p>这种做法在降低正常样本绝对数量的同时，保留了正常状态下的核心数据分布特征。</p>
 
         <h3 id="22-模型层深度孪生自注意力网络-dssan">2.2 模型层：深度孪生自注意力网络 (DSSAN)</h3>
-        <p>DSSAN 模块包含两个核心机制：</p>
-        <ul>
-            <li><strong>孪生网络架构 (Siamese Network)</strong>：接收成对样本，通过引入对比损失函数（Contrastive Loss），在特征空间中拉近同类、推远异类，缓解类别重叠。</li>
-            <li><strong>自注意力机制 (Self-Attention Mechanism)</strong>：使用 SANet 捕捉多维时间序列中的全局依赖和演变规律。</li>
-        </ul>
+        <p>在获得平衡的数据集后，模型需要解决样本重叠和特征提取的问题。DSSAN模块包含两个核心机制：</p>
+        <p><strong>1. 孪生网络架构（Siamese Network）</strong><br>
+        区别于传统模型直接对单一样本进行分类，孪生网络接收“成对样本”作为输入。模型在训练时的目标是判断这对样本是否属于同一类别。通过引入对比损失函数（Contrastive Loss），模型在训练过程中会将同类样本在特征空间中拉近，将不同类别的样本推远。这种机制能够有效扩大正常样本与故障样本在特征空间中的距离，从而缓解类别重叠带来的误判问题。</p>
+        <p><strong>2. 自注意力机制（Self-Attention Mechanism）</strong><br>
+        燃气轮机的监测数据是典型的多维时间序列。作为孪生网络的特征提取模块，自注意力网络（SANet）能够同时对不同位置和不同维度的数据点进行全局关注。通过多头自注意力机制（Multi-head Self-Attention），模型可以更全面地捕捉数据在时间维度上的依赖关系和演变规律。</p>
 
         <h2 id="3-实验设计与数据处理">3. 实验设计与数据处理</h2>
-        <p>研究使用了某亚洲航空公司的燃气轮机真实基线偏差数据。针对时间序列特性，采用滑动窗口构建样本，并使用五折交叉验证。</p>
+        <p>研究使用了某亚洲航空公司的真实航班运行数据。考虑到直接测量的参数会受到环境和推力的干扰，实验选取了由原始设备制造商（OEM）转换后的基线偏差值作为特征参数，主要包括：</p>
+        <ul>
+            <li>排气温度裕度（EGTM）</li>
+            <li>排气温度偏差（DEGT）</li>
+            <li>核心机转速偏差（DN2）</li>
+            <li>燃油流量偏差（DFF）</li>
+        </ul>
+        <p>针对时间序列特性，实验采用了滑动窗口方法来构建样本，并使用五折交叉验证来消除单次实验的随机性。数据集包含了984个正常样本，以及少量的排气温度指示故障（EIF）和总温传感器指示故障（TSIF）样本。</p>
 
         <p><strong>表1 燃气轮机数据集样本数量汇总表</strong></p>
         <table>
@@ -131,20 +131,19 @@
         </table>
 
         <h2 id="4-结论">4. 结论</h2>
+        <p>通过对比主流的深度网络（如ConvNet, RNN, LSTM, GRU）以及常规重采样方法（SMOTE过采样、普通聚类降采样），实验得出了客观的性能数据：</p>
         <ol>
-            <li><strong>准确率提升</strong>：CBU-DSSAN 的平衡准确率达到 92.26%，优于常规重采样与基线网络组合。</li>
-            <li><strong>特征分离效果</strong>：t-SNE 可视化证实模型成功拉开了原本混杂的类别边界。</li>
-            <li><strong>推理效率</strong>：单个样本推理时间约 1.33 毫秒，满足工业实时监测需求。</li>
+            <li><strong>准确率提升</strong>：在平衡准确率（Balanced Accuracy，综合考量各类别的识别率）指标上，CBU-DSSAN达到了92.26%，明显优于单独的基线模型以及结合了其他采样策略的对照组。</li>
+            <li><strong>特征分离效果</strong>：二维特征可视化（t-SNE）显示，传统模型提取的特征空间中，故障样本与正常样本混杂严重。而在CBU-DSSAN提取的特征空间内，不同类别的样本展现出了清晰的边界，验证了孪生网络对比损失的有效性。</li>
+            <li><strong>推理效率</strong>：虽然孪生网络的结构较为复杂，但经过训练后，对单个测试样本的推理时间约为1.33毫秒，完全能够满足工业场景下实时监测的要求。</li>
         </ol>
+        <p>该方法说明，在处理极度不平衡且存在类别重叠的工业故障数据时，将数据级的数据压缩（保留代表性）与算法级的距离度量学习（拉大类间距）相结合，是一条切实可行的路径。</p>
 
         <hr>
         <h2 id="文献来源">文献来源</h2>
         <p><strong>Title</strong>: Highly imbalanced fault diagnosis of gas turbines via clustering-based downsampling and deep siamese self-attention network</p>
-        <p><strong>Journal</strong>: <em>Advanced Engineering Informatics</em></p>
+        <p><strong>Journal</strong>: Advanced Engineering Informatics</p>
         <p><strong>DOI</strong>: 10.1016/j.aei.2022.101725</p>
-
     </main>
-
 </body>
-
 </html>
